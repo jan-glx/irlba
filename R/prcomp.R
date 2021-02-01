@@ -90,29 +90,24 @@ control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
   {
       if (is.numeric(args$center))
       {
-        f <- function(i) sqrt(sum((x[, i] - args$center[i]) ^ 2) / (nrow(x) - 1L))
-        scale. <- vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE)
-        if (ans$scale) ans$totalvar <- ncol(x)
-        else ans$totalvar <- sum(scale. ^ 2)
+        scale. <- MatrixGenerics::colSDs(x, center = args$center)
+        ans$totalvar <- if (ans$scale) ncol(x) else sum(scale. ^ 2)
       } else
       {
         if (ans$scale)
         {
-          scale. <- apply(x, 2L, function(v) sqrt(sum(v ^ 2) / max(1, length(v) - 1L)))
-          f <- function(i) sqrt(sum((x[, i] / scale.[i]) ^ 2) / (nrow(x) - 1L))
-          ans$totalvar <- sum(vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE) ^ 2)
+          scale. <- MatrixGenerics::colSDs(center = 0)
+          ans$totalvar <- ncol(x)
         } else
         {
-          f <- function(i) sum(x[, i] ^ 2) / (nrow(x) - 1L)
-          ans$totalvar <- sum(vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE))
+          ans$totalvar <- sum(MatrixGenerics::colVars(center = 0))
         }
       }
       if (ans$scale) args$scale <- scale.
   } else
   {
     args$scale <- scale.
-    f <- function(i) sqrt(sum((x[, i] / scale.[i]) ^ 2) / (nrow(x) - 1L))
-    ans$totalvar <- sum(vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE))
+    ans$totalvar <- sum(MatrixGenerics::colVars(center = 0))
   }
   if (!missing(...)) args <- c(args, list(...))
 
